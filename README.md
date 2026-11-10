@@ -10,6 +10,16 @@ A relational database system for approved public-transport fare lookup, passenge
 
 ---
 
+## 📄 Project Documentation
+
+The following document contains the project's Entity Relationship Diagram (ERD) and relational schema design.
+
+- [ERD & Schema Design (PDF)](docs/CSE311L_Team06_ERD_Schema_Design.pdf)
+
+It presents the database entities, attributes, relationships, cardinalities, primary keys, foreign keys, and relational schema.
+
+---
+
 ## 🏛️ Academic Information
 
 - **Institution:** North South University (NSU)
@@ -445,9 +455,9 @@ The sample `password_hash` values are placeholders for demonstration and are not
 ```text
 fare-dispute-redressal-system/
 ├── README.md
-├── README.txt
-└── fare_dispute_redressal.sql
-```
+├── fare_dispute_redressal.sql
+└── docs/
+    └── CSE311L_Team06_ERD_Schema_Design.pdf
 
 ---
 

@@ -2,7 +2,7 @@
 
 [![Database](https://img.shields.io/badge/Database-MySQL%208.0.16%2B%20%7C%20MariaDB%2010.4%2B-blue.svg)](https://www.mysql.com/)
 [![Environment](https://img.shields.io/badge/Environment-XAMPP-orange.svg)](https://www.apachefriends.org/)
-[![Course](https://img.shields.io/badge/Course-CSE311L%20Database%20Systems%20Lab-red.svg)](http://www.northsouth.edu/)
+[![Course](https://img.shields.io/badge/Course-CSE311L%20Database%20Systems%20Lab-red.svg)](https://ece.northsouth.edu/courses/cse-311/)
 [![Section](https://img.shields.io/badge/Section-03%20%7C%20Team%2006-green.svg)]()
 [![Status](https://img.shields.io/badge/Status-Schema%20%26%20Demo%20Data%20Included-success.svg)]()
 

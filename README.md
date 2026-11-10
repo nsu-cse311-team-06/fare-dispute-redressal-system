@@ -10,13 +10,23 @@ A relational database system for approved public-transport fare lookup, passenge
 
 ---
 
+## 📄 Project Documentation
+
+The following document contains the project's official approved Entity Relationship Diagram (ERD) and relational schema design:
+
+- 📑 **[ERD & Schema Design (PDF)](docs/CSE311L_Team06_ERD_Schema_Design.pdf)**
+
+It presents the comprehensive database design, including entities, attributes, relationships, cardinalities, primary keys, foreign keys, and the normalized logical relational schema.
+
+---
+
 ## 🏛️ Academic Information
 
 - **Institution:** North South University (NSU)
 - **Department:** Electrical & Computer Engineering (ECE)
 - **Course:** CSE311L — Database Systems Lab
 - **Section:** 03 | **Team:** Team 06
-- **Faculty:** Ms. Tanzilah Noor Shabnam [TnS1]
+- **Faculty:** Ms. Tanzilah Noor Shabnam `[TnS1]`
 - **Lab Instructor:** Md. Amanullah Shah
 
 ---
@@ -30,7 +40,7 @@ A relational database system for approved public-transport fare lookup, passenge
 | **Progna Thakur** | `241134****` | **Database Engineer & Backend Developer** — referential integrity, triggers, views, and backend connection. |
 | **Tausif Taher** | `241143****` | **Database Administrator & System Tester** — test data, edge-case validation, and integrity testing. |
 
-> Student ID digits are masked for privacy.
+> *Note: Student ID digits are masked for privacy on public GitHub repositories.*
 
 ---
 
@@ -142,18 +152,18 @@ COMPLAINT        1 ──── N COMPLAINT_REVIEW
 
 ### 📚 Table Breakdown
 
-| Table | Primary Key | Purpose |
-|---|---|---|
-| `USER` | `user_id` | Stores passengers and administrators. |
-| `BUS_OPERATOR` | `operator_id` | Stores transport operators and license information. |
-| `BUS` | `bus_id` | Stores individual buses and their operators. |
-| `ROUTE` | `route_id` | Stores route names, origins, and destinations. |
-| `STOP` | `stop_id` | Stores reusable bus stops. |
-| `ROUTE_STOP` | `route_id, stop_id` | Resolves route-stop M:N mapping and stores stop order. |
-| `FARE` | `fare_id` | Stores approved fares and validity dates. |
-| `COMPLAINT` | `complaint_id` | Stores passenger fare dispute reports. |
-| `COMPLAINT_PHOTO` | `photo_id` | Stores optional evidence file paths. |
-| `COMPLAINT_REVIEW` | `review_id` | Stores administrator decisions and remarks. |
+| Table | Primary Key | Foreign Keys & Relationships | Key Constraints & Rules | Purpose |
+|---|---|---|---|---|
+| `USER` | `user_id` | *None* | `email` (UNIQUE), `role` (`Passenger`, `Admin`) | Stores passengers and administrators. |
+| `BUS_OPERATOR` | `operator_id` | *None* | `license_no` (UNIQUE), `status` (`Active`, `Suspended`) | Stores transport operators and license information. |
+| `BUS` | `bus_id` | `operator_id` $\rightarrow$ `BUS_OPERATOR` | `bus_number` (UNIQUE), `ON DELETE RESTRICT` | Stores individual buses and their operators. |
+| `ROUTE` | `route_id` | *None* | `route_name` (UNIQUE) | Stores route names, origins, and destinations. |
+| `STOP` | `stop_id` | *None* | `stop_name` (NOT NULL) | Stores reusable bus stops. |
+| `ROUTE_STOP` | `route_id, stop_id` | `route_id` $\rightarrow$ `ROUTE`<br>`stop_id` $\rightarrow$ `STOP` | Composite PK, `UNIQUE(route_id, stop_order)`, `CHECK(stop_order > 0)`, `ON DELETE CASCADE` on route | Resolves route-stop M:N mapping and stores stop order. |
+| `FARE` | `fare_id` | `route_id` $\rightarrow$ `ROUTE`<br>`from_stop_id`, `to_stop_id` $\rightarrow$ `STOP`<br>`managed_by` $\rightarrow$ `USER` | `approved_fare >= 0`, `UNIQUE(route, from, to, date)`, `effective_to >= effective_from`, `RESTRICT` on delete | Stores approved fares and validity dates. |
+| `COMPLAINT` | `complaint_id` | `passenger_id` $\rightarrow$ `USER`<br>`bus_id` $\rightarrow$ `BUS`<br>`fare_id` $\rightarrow$ `FARE` | `tracking_number` (UNIQUE, DEFAULT ''), `amount_paid > 0`, default status `Pending`, `RESTRICT` on delete | Stores passenger fare dispute reports. |
+| `COMPLAINT_PHOTO` | `photo_id` | `complaint_id` $\rightarrow$ `COMPLAINT` | `ON DELETE CASCADE` (dependent evidence files) | Stores optional evidence file paths. |
+| `COMPLAINT_REVIEW` | `review_id` | `complaint_id` $\rightarrow$ `COMPLAINT`<br>`admin_id` $\rightarrow$ `USER` | `decision` (`Under Review`, `Resolved`, `Rejected`), `ON DELETE CASCADE` on complaint, `RESTRICT` on admin | Stores administrator decisions and remarks. |
 
 ---
 
@@ -250,17 +260,16 @@ From the folder containing the SQL file:
 mysql -u root -p < fare_dispute_redressal.sql
 ```
 
-For a default Windows XAMPP installation:
+For a default Windows XAMPP installation, run the following commands in Windows Command Prompt (CMD) from the folder containing the SQL file:
 
-```powershell
-cd C:\xampp\mysql\bin
-.\mysql.exe -u root -p < "D:\#Study\CSE311\fare-dispute-redressal-system\fare_dispute_redressal.sql"
+**Default MySQL port (3306):**
+```cmd
+"C:\xampp\mysql\bin\mysql.exe" -u root -p < fare_dispute_redressal.sql
 ```
 
-If MySQL is configured on port 3307:
-
-```powershell
-.\mysql.exe -P 3307 -u root -p < "D:\#Study\CSE311\fare-dispute-redressal-system\fare_dispute_redressal.sql"
+**If MySQL is configured on port 3307:**
+```cmd
+"C:\xampp\mysql\bin\mysql.exe" -P 3307 -u root -p < fare_dispute_redressal.sql
 ```
 
 If the default XAMPP root account has no password, press **Enter** when prompted.
@@ -400,23 +409,26 @@ Run these statements individually after importing the database. They are expecte
 ```sql
 USE fare_dispute_db;
 
--- Passenger attempting to create a review
+-- 1. Passenger attempting to create a review (Requires Admin role)
 INSERT INTO COMPLAINT_REVIEW
     (complaint_id, admin_id, decision, remarks)
 VALUES
     (1, 3, 'Resolved', 'Unauthorized passenger review');
+-- Expected: ERROR 1644 (45000): COMPLAINT_REVIEW.admin_id must reference a user with role Admin
 
--- Boarding and destination stops are identical
+-- 2. Boarding and destination stops are identical
 INSERT INTO FARE
     (route_id, from_stop_id, to_stop_id, approved_fare, effective_from, managed_by)
 VALUES
     (1, 1, 1, 15.00, '2026-01-01', 1);
+-- Expected: ERROR 1644 (45000): Boarding stop and destination stop must be different
 
--- Journey date is outside the fare validity period
+-- 3. Journey date is outside the fare validity period
 INSERT INTO COMPLAINT
     (passenger_id, bus_id, fare_id, journey_date, amount_paid, description)
 VALUES
     (3, 1, 1, '2025-06-15', 50.00, 'Backdated journey complaint');
+-- Expected: ERROR 1644 (45000): Journey date is outside the effective period of the linked fare
 ```
 
 Do not re-import the entire SQL file to test one statement because the script recreates the database.
@@ -445,8 +457,9 @@ The sample `password_hash` values are placeholders for demonstration and are not
 ```text
 fare-dispute-redressal-system/
 ├── README.md
-├── README.txt
-└── fare_dispute_redressal.sql
+├── fare_dispute_redressal.sql
+└── docs/
+    └── CSE311L_Team06_ERD_Schema_Design.pdf
 ```
 
 ---

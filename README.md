@@ -115,7 +115,7 @@ The tracking number is protected by a unique constraint.
 - Resolved
 - Rejected
 
-A trigger automatically updates the parent complaint's current status after each review.
+A trigger automatically updates the parent complaint's current status when a new review record is inserted.
 
 ### 📊 Analytics
 
@@ -159,7 +159,7 @@ COMPLAINT        1 ──── N COMPLAINT_REVIEW
 | `BUS` | `bus_id` | `operator_id` $\rightarrow$ `BUS_OPERATOR` | `bus_number` (UNIQUE), `ON DELETE RESTRICT` | Stores individual buses and their operators. |
 | `ROUTE` | `route_id` | *None* | `route_name` (UNIQUE) | Stores route names, origins, and destinations. |
 | `STOP` | `stop_id` | *None* | `stop_name` (NOT NULL) | Stores reusable bus stops. |
-| `ROUTE_STOP` | `route_id, stop_id` | `route_id` $\rightarrow$ `ROUTE`<br>`stop_id` $\rightarrow$ `STOP` | Composite PK, `UNIQUE(route_id, stop_order)`, `CHECK(stop_order > 0)`, `ON DELETE CASCADE` on route | Resolves route-stop M:N mapping and stores stop order. |
+| `ROUTE_STOP` | `route_id, stop_id` | `route_id` $\rightarrow$ `ROUTE`<br>`stop_id` $\rightarrow$ `STOP` | Composite PK, `UNIQUE(route_id, stop_order)`, `CHECK(stop_order > 0)`, `ON DELETE CASCADE` on route; `ON DELETE RESTRICT` on stop | Resolves route-stop M:N mapping and stores stop order. |
 | `FARE` | `fare_id` | `route_id` $\rightarrow$ `ROUTE`<br>`from_stop_id`, `to_stop_id` $\rightarrow$ `STOP`<br>`managed_by` $\rightarrow$ `USER` | `approved_fare >= 0`, `UNIQUE(route, from, to, date)`, `effective_to >= effective_from`, `RESTRICT` on delete | Stores approved fares and validity dates. |
 | `COMPLAINT` | `complaint_id` | `passenger_id` $\rightarrow$ `USER`<br>`bus_id` $\rightarrow$ `BUS`<br>`fare_id` $\rightarrow$ `FARE` | `tracking_number` (UNIQUE, DEFAULT ''), `amount_paid > 0`, default status `Pending`, `RESTRICT` on delete | Stores passenger fare dispute reports. |
 | `COMPLAINT_PHOTO` | `photo_id` | `complaint_id` $\rightarrow$ `COMPLAINT` | `ON DELETE CASCADE` (dependent evidence files) | Stores optional evidence file paths. |
